@@ -158,8 +158,13 @@ static int open_callback(const char *path, struct fuse_file_info *fi)
     return -EINVAL;
   }
 
+  int flags = fi->flags;
+  if ((flags & O_WRONLY) || (flags & O_RDWR) || (flags & O_CREAT) || (flags & O_EXCL) || (flags & O_TRUNC)) {
+      return -EPERM;
+  }
+
   errno = 0;
-  int fh = open(path, fi->flags);
+  int fh = open(path, flags);
   if (fh == -1 && errno == ENOENT) {
     errno = 0;
     fh = open(deffile, fi->flags);
